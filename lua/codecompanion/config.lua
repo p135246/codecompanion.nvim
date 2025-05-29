@@ -1,6 +1,6 @@
-local fmt = string.format
-
 local providers = require("codecompanion.providers")
+
+local fmt = string.format
 
 local constants = {
   LLM_ROLE = "llm",
@@ -23,10 +23,9 @@ local defaults = {
     ollama = "ollama",
     openai = "openai",
     xai = "xai",
-    -- NON-LLMs ---------------------------------------------------------------
-    non_llms = {
-      jina = "jina",
-    },
+    -- Non LLMs
+    jina = "jina",
+    tavily = "tavily",
     -- OPTIONS ----------------------------------------------------------------
     opts = {
       allow_insecure = false, -- Allow insecure connections?
@@ -82,6 +81,19 @@ local defaults = {
             requires_approval = true,
           },
         },
+        ["web_search"] = {
+          callback = "strategies.chat.agents.tools.web_search",
+          description = "Search the web for information",
+          opts = {
+            adapter = "tavily", -- tavily
+            opts = {
+              search_depth = "advanced",
+              topic = "general",
+              chunks_per_source = 3,
+              max_results = 5,
+            },
+          },
+        },
         opts = {
           auto_submit_errors = false, -- Send any errors to the LLM automatically?
           auto_submit_success = false, -- Send any successful output to the LLM automatically?
@@ -117,14 +129,16 @@ local defaults = {
           description = "Insert open buffers",
           opts = {
             contains_code = true,
-            provider = providers.pickers, -- telescope|snacks|mini_pick|fzf_lua|default
+            provider = providers.pickers, -- telescope|fzf_lua|mini_pick|snacks|default
           },
         },
         ["fetch"] = {
           callback = "strategies.chat.slash_commands.fetch",
           description = "Insert URL contents",
           opts = {
-            adapter = "jina",
+            adapter = "jina", -- jina
+            cache_path = vim.fn.stdpath("data") .. "/codecompanion/urls",
+            provider = providers.pickers, -- telescope|fzf_lua|mini_pick|snacks|default
           },
         },
         ["file"] = {
@@ -133,7 +147,7 @@ local defaults = {
           opts = {
             contains_code = true,
             max_lines = 1000,
-            provider = providers.pickers, -- telescope|snacks|mini_pick|fzf_lua|default
+            provider = providers.pickers, -- telescope|fzf_lua|mini_pick|snacks|default
           },
         },
         ["help"] = {
@@ -142,7 +156,16 @@ local defaults = {
           opts = {
             contains_code = false,
             max_lines = 128, -- Maximum amount of lines to of the help file to send (NOTE: Each vimdoc line is typically 10 tokens)
-            provider = providers.help, -- telescope|snacks|mini_pick|fzf_lua
+            provider = providers.help, -- telescope|fzf_lua|mini_pick|snacks
+          },
+        },
+        ["image"] = {
+          callback = "strategies.chat.slash_commands.image",
+          description = "Insert an image",
+          opts = {
+            dirs = {}, -- Directories to search for images
+            filetypes = { "png", "jpg", "jpeg", "gif", "webp" }, -- Filetypes to search for
+            provider = providers.images, -- snacks|default
           },
         },
         ["now"] = {
@@ -157,7 +180,7 @@ local defaults = {
           description = "Insert symbols for a selected file",
           opts = {
             contains_code = true,
-            provider = providers.pickers, -- telescope|snacks|mini_pick|fzf_lua|default
+            provider = providers.pickers, -- telescope|fzf_lua|mini_pick|snacks|default
           },
         },
         ["terminal"] = {
