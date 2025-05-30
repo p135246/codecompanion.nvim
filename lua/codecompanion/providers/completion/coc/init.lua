@@ -5,7 +5,7 @@ function M.init()
     priority = 9,
     shortcut = "CodeCompanion",
     filetypes = { "codecompanion" },
-    triggerCharacters = { "/", "#", "@" }
+    triggerCharacters = { "/", "#", "@" },
   }
 end
 
@@ -16,10 +16,11 @@ local function format_complete_items(opt, complete_items)
     item.word = item.label:sub(2)
     item.abbr = item.label
     item.label = nil -- necessary for coc matching
+    item.info = item.detail
     item.context = {
       bufnr = opt.bufnr,
       input = opt.input,
-      cursor = { row = opt.linenr, col = opt.colnr }
+      cursor = { row = opt.linenr, col = opt.colnr },
     }
   end
   return complete_items
@@ -40,8 +41,11 @@ function M.complete(opt)
 end
 
 function M.execute(opt)
+  if not (opt.type == "slash_command") then
+    return
+  end
   opt.label = opt.abbr -- necessary for command execution
-  local chat = require("codecompanion").buf_get_chat(opt.bufnr)
+  local chat = require("codecompanion").buf_get_chat(opt.context.bufnr)
   completion.slash_commands_execute(opt, chat)
 end
 
@@ -66,7 +70,7 @@ endfunction
 function! coc#source#codecompanion#on_complete(opt) abort
   return a:cb(v:lua.codecompanion_coc_execute(a:opt))
 endfunction
-]]
+]],
 }
 
 function M.ensure_autoload_file()
