@@ -48,7 +48,7 @@ local configs = {
     condition = function()
       local has_cmp, _ = pcall(require, "cmp")
       local has_blink, _ = pcall(require, "blink.cmp")
-      local has_coc = vim.fn.exists("*coc#rpc#ready") == 1
+      local has_coc = true
       return has_coc and not has_blink and not has_cmp
     end,
   },
